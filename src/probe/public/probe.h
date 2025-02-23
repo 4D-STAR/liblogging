@@ -33,6 +33,12 @@ namespace Probe {
    */
   void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
                 const std::string& windowTitle = "solution");
+  
+  double getMeshRadius(mfem::Mesh& mesh);
+
+  std::vector<double> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
+                                    const std::vector<double>& rayDirection,
+                                    int numSamples);
 
   /**
    * @brief Class to manage logging operations.
