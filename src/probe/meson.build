@@ -1,22 +1,22 @@
 # Define the library
-logger_sources = files(
-  'private/logger.cpp',
+probe_sources = files(
+  'private/probe.cpp',
 )
 
-logger_headers = files(
-    'public/logger.h'
+probe_headers = files(
+    'public/probe.h'
 )
 
 # Define the liblogger library so it can be linked against by other parts of the build system
-liblogger = library('logger',
-    logger_sources, 
+libprobe = static_library('probe',
+    probe_sources, 
     include_directories: include_directories('public'),
     cpp_args: ['-fvisibility=default'],
-    install : true)
+    install : true,
+    dependencies: [config_dep, mfem_dep, quill_dep]
+    )
 
-logger_dep = declare_dependency(
+probe_dep = declare_dependency(
     include_directories: include_directories('public'),
-    link_with: liblogger,
+    link_with: libprobe,
 )
-# Make headers accessible
-install_headers(logger_headers, subdir : '4DSSE/logger')
