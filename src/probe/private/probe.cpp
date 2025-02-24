@@ -34,6 +34,8 @@ void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
   if (config.get<bool>("Probe:GLVis:Visualization", true)) {
     std::string vishost = config.get<std::string>("Probe:GLVis:Host", "localhost");
     int visport = config.get<int>("Probe:GLVis:Port", 19916); // Changed default port
+    std::cout << "GLVis visualization enabled. Opening GLVis window... " << std::endl;
+    std::cout << "Using host: " << vishost << " and port: " << visport << std::endl;
     mfem::socketstream sol_sock(vishost.c_str(), visport);
     sol_sock.precision(8);
     sol_sock << "solution\n" << mesh << u
@@ -68,7 +70,7 @@ std::vector<double> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
   quill::Logger* logger = logManager.getLogger("polyTest");
   std::vector<double> samples;
   samples.reserve(numSamples);
-  double x, y, z, r;
+  double x, y, z, r, sampleValue;
   double radius = getMeshRadius(mesh);
   mfem::Vector rayOrigin(3); rayOrigin = 0.0;
   mfem::DenseMatrix rayPoints(3, numSamples);
@@ -82,12 +84,23 @@ std::vector<double> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
     rayPoints(0, i) = x;
     rayPoints(1, i) = y;
     rayPoints(2, i) = z;
-    LOG_INFO(logger, "Ray point {}: ({}, {}, {})", i, x, y, z);
   }
 
   mfem::Array<int> elementIds;
   mfem::Array<mfem::IntegrationPoint> ips;
   mesh.FindPoints(rayPoints, elementIds, ips);
+  for (int i = 0; i < elementIds.Size(); i++) {
+    int elementId = elementIds[i];
+    mfem::IntegrationPoint ip = ips[i];
+
+    if (elementId >= 0) { // Check if the point was found in an element
+        sampleValue = u.GetValue(i, ip);
+        LOG_INFO(logger, "Sample {}: Value = {:0.2E}", i, sampleValue);
+        samples.push_back(sampleValue);
+    } else { // If the point was not found in an element
+        samples.push_back(0.0); 
+    }
+  }
   return samples;
 }
 
