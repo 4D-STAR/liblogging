@@ -13,7 +13,7 @@ libprobe = static_library('probe',
     include_directories: include_directories('public'),
     cpp_args: ['-fvisibility=default'],
     install : true,
-    dependencies: [config_dep, mfem_dep, quill_dep]
+    dependencies: [config_dep, mfem_dep, quill_dep, warning_control_dep]
     )
 
 probe_dep = declare_dependency(

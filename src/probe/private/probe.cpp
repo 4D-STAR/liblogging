@@ -15,6 +15,8 @@
 #include "config.h" 
 #include "probe.h" 
 
+#include "warning_control.h"
+
 
 namespace Probe {
 
@@ -41,6 +43,15 @@ void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
     sol_sock << "solution\n" << mesh << u
              << "window_title '" << windowTitle << "'\n" << std::flush; // Added title
   }
+}
+
+void glVisView(mfem::Vector &vec, mfem::FiniteElementSpace &fes, const std::string &windowTitle) {
+  mfem::GridFunction gf(&fes);
+  
+  DEPRECATION_WARNING_OFF
+    gf.SetData(vec);
+  DEPRECATION_WARNING_ON
+  glVisView(gf, *fes.GetMesh(), windowTitle);
 }
 
 double getMeshRadius(mfem::Mesh& mesh) {

@@ -32,13 +32,21 @@ namespace Probe {
    * @param windowTitle The title of the visualization window.
    */
   void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
-                const std::string& windowTitle = "solution");
+    const std::string& windowTitle = "grid function");
+  
+  /**
+   * @brief Visualize a vector using GLVis.
+   * @param vec The vector to visualize.
+   * @param mesh The mesh associated with the vector.
+   * @param windowTitle The title of the visualization window.
+   */
+  void glVisView(mfem::Vector &vec, mfem::FiniteElementSpace &fes,
+    const std::string &windowTitle = "vector"); 
   
   double getMeshRadius(mfem::Mesh& mesh);
 
   std::vector<double> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
-                                    const std::vector<double>& rayDirection,
-                                    int numSamples);
+    const std::vector<double>& rayDirection, int numSamples);
 
   /**
    * @brief Class to manage logging operations.
