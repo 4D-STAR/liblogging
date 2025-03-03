@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <utility>
 
 #include "mfem.hpp"
 #include "quill/Logger.h"
@@ -30,23 +31,30 @@ namespace Probe {
    * @param u The GridFunction to visualize.
    * @param mesh The mesh associated with the GridFunction.
    * @param windowTitle The title of the visualization window.
+   * @param keyset The keyset to use for visualization.
    */
   void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
-    const std::string& windowTitle = "grid function");
+    const std::string& windowTitle = "grid function", const std::string& keyset="");
   
   /**
    * @brief Visualize a vector using GLVis.
    * @param vec The vector to visualize.
    * @param mesh The mesh associated with the vector.
    * @param windowTitle The title of the visualization window.
+   * @param keyset The keyset to use for visualization.
    */
   void glVisView(mfem::Vector &vec, mfem::FiniteElementSpace &fes,
-    const std::string &windowTitle = "vector"); 
+    const std::string &windowTitle = "vector", const std::string& keyset=""); 
+
   
   double getMeshRadius(mfem::Mesh& mesh);
 
-  std::vector<double> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
-    const std::vector<double>& rayDirection, int numSamples);
+  std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
+    const std::vector<double>& rayDirection, int numSamples, std::string filename="");
+
+  std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::Vector &vec, mfem::FiniteElementSpace &fes,
+    const std::vector<double>& rayDirection, int numSamples, std::string filename="");
+
 
   /**
    * @brief Class to manage logging operations.

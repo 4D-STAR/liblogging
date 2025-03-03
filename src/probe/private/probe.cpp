@@ -4,11 +4,14 @@
 #include "quill/sinks/ConsoleSink.h"
 #include "quill/sinks/FileSink.h" 
 #include "quill/LogMacros.h"
+
 #include <stdexcept>              
 #include <string>
 #include <iostream>
 #include <chrono>
 #include <cmath>
+#include <vector>
+#include <utility>
 
 #include "mfem.hpp"
 
@@ -31,7 +34,7 @@ void wait(int seconds) {
 }
 
 void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
-               const std::string& windowTitle) {
+               const std::string& windowTitle, const std::string& keyset) {
   Config& config = Config::getInstance();
   if (config.get<bool>("Probe:GLVis:Visualization", true)) {
     std::string vishost = config.get<std::string>("Probe:GLVis:Host", "localhost");
@@ -41,50 +44,56 @@ void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
     mfem::socketstream sol_sock(vishost.c_str(), visport);
     sol_sock.precision(8);
     sol_sock << "solution\n" << mesh << u
-             << "window_title '" << windowTitle << "'\n" << std::flush; // Added title
+             << "window_title '" << windowTitle << "'\n"; // Added title
+    if (!keyset.empty()) {
+      sol_sock << "keys " << keyset << '\n';
+    }
+    sol_sock << std::flush;
   }
 }
 
-void glVisView(mfem::Vector &vec, mfem::FiniteElementSpace &fes, const std::string &windowTitle) {
+void glVisView(mfem::Vector &vec, mfem::FiniteElementSpace &fes, const std::string &windowTitle, const std::string& keyset) {
   mfem::GridFunction gf(&fes);
   
   DEPRECATION_WARNING_OFF
     gf.SetData(vec);
   DEPRECATION_WARNING_ON
-  glVisView(gf, *fes.GetMesh(), windowTitle);
+  glVisView(gf, *fes.GetMesh(), windowTitle, keyset);
 }
 
 double getMeshRadius(mfem::Mesh& mesh) {
-  int numVertices = mesh.GetNV(); // Number of vertices
-  double maxRadius = 0.0;
+  mesh.EnsureNodes();
+  const mfem::GridFunction *nodes = mesh.GetNodes();
+  double *node_data = nodes->GetData();  // THIS IS KEY
 
-  for (int i = 0; i < numVertices; i++) {
-      double* vertex; 
-      vertex = mesh.GetVertex(i); // Get vertex coordinates
+  int data_size = nodes->Size();
+  double max_radius = 0.0;
 
-      // Compute the Euclidean distance from the origin
-      double radius = std::sqrt(vertex[0] * vertex[0] +
-                                vertex[1] * vertex[1] +
-                                vertex[2] * vertex[2]);
-
-      if (radius > maxRadius) {
-          maxRadius = radius;
-      }
+  for (int i = 0; i < data_size; ++i) {
+    if (node_data[i] > max_radius) {
+      max_radius = node_data[i];
+    }
   }
-  return maxRadius;
+  return max_radius;
+
 }
 
-std::vector<double> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
+std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
                                    const std::vector<double>& rayDirection,
-                                   int numSamples) {
-  LogManager& logManager = LogManager::getInstance();
-  quill::Logger* logger = logManager.getLogger("polyTest");
+                                   int numSamples, std::string filename) {
+  Probe::LogManager& logManager = Probe::LogManager::getInstance();
+  quill::Logger* logger = logManager.getLogger("log");
+  LOG_INFO(logger, "Getting ray solution...");
   std::vector<double> samples;
   samples.reserve(numSamples);
   double x, y, z, r, sampleValue;
   double radius = getMeshRadius(mesh);
   mfem::Vector rayOrigin(3); rayOrigin = 0.0;
   mfem::DenseMatrix rayPoints(3, numSamples);
+  std::vector<double> radialPoints;
+  radialPoints.reserve(numSamples);
+  mfem::ElementTransformation* Trans = nullptr;
+  mfem::Vector physicalCoords;
 
   for (int i = 0; i < numSamples; i++) {
     r = i * radius / numSamples;
@@ -101,18 +110,50 @@ std::vector<double> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
   mfem::Array<mfem::IntegrationPoint> ips;
   mesh.FindPoints(rayPoints, elementIds, ips);
   for (int i = 0; i < elementIds.Size(); i++) {
+    Trans = mesh.GetElementTransformation(elementIds[i]);
+    Trans->Transform(ips[i], physicalCoords);
+    double r = std::sqrt(physicalCoords[0] * physicalCoords[0] +
+                         physicalCoords[1] * physicalCoords[1] +
+                         physicalCoords[2] * physicalCoords[2]);
+    radialPoints.push_back(r);
+
     int elementId = elementIds[i];
     mfem::IntegrationPoint ip = ips[i];
-
     if (elementId >= 0) { // Check if the point was found in an element
-        sampleValue = u.GetValue(i, ip);
-        LOG_INFO(logger, "Sample {}: Value = {:0.2E}", i, sampleValue);
+        sampleValue = u.GetValue(elementId, ip);
+        LOG_INFO(logger, "Ray point {} found in element {} with r={:0.2f} and theta={:0.2f}", i, elementId, r, sampleValue);
         samples.push_back(sampleValue);
     } else { // If the point was not found in an element
         samples.push_back(0.0); 
     }
   }
-  return samples;
+  std::pair<std::vector<double>, std::vector<double>> samplesPair(radialPoints, samples);
+
+  if (!filename.empty()) {
+    std::ofstream file(filename);
+    if (file.is_open()) {
+        file << "r,u\n";
+        for (int i = 0; i < numSamples; i++) {
+            file << samplesPair.first[i] << "," << samplesPair.second[i] << "\n";
+        }
+        file << std::endl;
+        file.close();
+    } else {
+      throw(std::runtime_error("Could not open file " + filename));
+    }
+  }
+
+  return samplesPair;
+}
+
+std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::Vector &vec, mfem::FiniteElementSpace &fes,
+                                   const std::vector<double>& rayDirection,
+                                   int numSamples, std::string filename) {
+  mfem::GridFunction gf(&fes);
+  DEPRECATION_WARNING_OFF
+    gf.SetData(vec);
+  DEPRECATION_WARNING_ON
+  return getRaySolution(gf, *fes.GetMesh(), rayDirection, numSamples, filename);
 }
 
 LogManager::LogManager() {
