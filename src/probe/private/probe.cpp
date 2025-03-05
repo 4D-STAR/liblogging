@@ -12,6 +12,7 @@
 #include <cmath>
 #include <vector>
 #include <utility>
+#include <filesystem>
 
 #include "mfem.hpp"
 
@@ -36,18 +37,26 @@ void wait(int seconds) {
 void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
                const std::string& windowTitle, const std::string& keyset) {
   Config& config = Config::getInstance();
+  quill::Logger* logger = LogManager::getInstance().getLogger("log");
+  std::string usedKeyset;
   if (config.get<bool>("Probe:GLVis:Visualization", true)) {
+    LOG_INFO(logger, "Visualizing solution using GLVis...");
+    LOG_INFO(logger, "Window title: {}", windowTitle);
+    if (keyset == "") {
+      usedKeyset = config.get<std::string>("Probe:GLVis:DefaultKeyset", "");
+    } else {
+      usedKeyset = keyset;
+    }
+    LOG_INFO(logger, "Keyset: {}", usedKeyset);
     std::string vishost = config.get<std::string>("Probe:GLVis:Host", "localhost");
-    int visport = config.get<int>("Probe:GLVis:Port", 19916); // Changed default port
+    int visport = config.get<int>("Probe:GLVis:Port", 19916);
     std::cout << "GLVis visualization enabled. Opening GLVis window... " << std::endl;
     std::cout << "Using host: " << vishost << " and port: " << visport << std::endl;
     mfem::socketstream sol_sock(vishost.c_str(), visport);
     sol_sock.precision(8);
     sol_sock << "solution\n" << mesh << u
-             << "window_title '" << windowTitle << "'\n"; // Added title
-    if (!keyset.empty()) {
-      sol_sock << "keys " << keyset << '\n';
-    }
+             << "window_title '" << windowTitle <<
+             "'\n" << "keys " << usedKeyset << "\n";
     sol_sock << std::flush;
   }
 }
@@ -81,9 +90,28 @@ double getMeshRadius(mfem::Mesh& mesh) {
 std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
                                    const std::vector<double>& rayDirection,
                                    int numSamples, std::string filename) {
+  Config& config = Config::getInstance();
   Probe::LogManager& logManager = Probe::LogManager::getInstance();
   quill::Logger* logger = logManager.getLogger("log");
   LOG_INFO(logger, "Getting ray solution...");
+  // Check if the directory to write to exists
+  // If it does not exist and MakeDir is true create it
+  // Otherwise throw an exception
+  bool makeDir = config.get<bool>("Probe:GetRaySolution:MakeDir", true);
+  std::filesystem::path path = filename;
+
+  if (makeDir) {
+    std::filesystem::path dir = path.parent_path();
+    if (!std::filesystem::exists(dir)) {
+      LOG_INFO(logger, "Creating directory {}", dir.string());
+      std::filesystem::create_directories(dir);
+    }
+  } else {
+    if (!std::filesystem::exists(path.parent_path())) {
+      throw(std::runtime_error("Directory " + path.parent_path().string() + " does not exist"));
+    }
+  }
+
   std::vector<double> samples;
   samples.reserve(numSamples);
   double x, y, z, r, sampleValue;
@@ -121,7 +149,7 @@ std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::GridFun
     mfem::IntegrationPoint ip = ips[i];
     if (elementId >= 0) { // Check if the point was found in an element
         sampleValue = u.GetValue(elementId, ip);
-        LOG_INFO(logger, "Ray point {} found in element {} with r={:0.2f} and theta={:0.2f}", i, elementId, r, sampleValue);
+        LOG_DEBUG(logger, "Probe::getRaySolution() : Ray point {} found in element {} with r={:0.2f} and theta={:0.2f}", i, elementId, r, sampleValue);
         samples.push_back(sampleValue);
     } else { // If the point was not found in an element
         samples.push_back(0.0); 
