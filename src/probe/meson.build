@@ -30,7 +30,8 @@ probe_headers = files(
 dependencies = [
     config_dep,
     mfem_dep,
-    quill_dep
+    quill_dep,
+    macros_dep
 ]
 
 # Define the liblogger library so it can be linked against by other parts of the build system
