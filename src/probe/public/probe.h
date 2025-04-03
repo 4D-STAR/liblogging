@@ -25,7 +25,6 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <iostream>
 #include <utility>
 
 #include "mfem.hpp"
@@ -65,7 +64,6 @@ namespace Probe {
    */
   void glVisView(mfem::Vector &vec, mfem::FiniteElementSpace &fes,
     const std::string &windowTitle = "vector", const std::string& keyset=""); 
-
   
   double getMeshRadius(mfem::Mesh& mesh);
 
