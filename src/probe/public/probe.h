@@ -2,7 +2,7 @@
 //
 //   Copyright (C) 2025 -- The 4D-STAR Collaboration
 //   File Author: Emily Boudreaux
-//   Last Modified: February 23, 2025
+//   Last Modified: April 03, 2025
 //
 //   4DSSE is free software; you can use it and/or modify
 //   it under the terms and restrictions the GNU General Library Public
@@ -25,7 +25,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <iostream>
+#include <utility>
 
 #include "mfem.hpp"
 #include "quill/Logger.h"
@@ -50,9 +50,29 @@ namespace Probe {
    * @param u The GridFunction to visualize.
    * @param mesh The mesh associated with the GridFunction.
    * @param windowTitle The title of the visualization window.
+   * @param keyset The keyset to use for visualization.
    */
   void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
-                const std::string& windowTitle = "solution");
+    const std::string& windowTitle = "grid function", const std::string& keyset="");
+  
+  /**
+   * @brief Visualize a vector using GLVis.
+   * @param vec The vector to visualize.
+   * @param mesh The mesh associated with the vector.
+   * @param windowTitle The title of the visualization window.
+   * @param keyset The keyset to use for visualization.
+   */
+  void glVisView(mfem::Vector &vec, mfem::FiniteElementSpace &fes,
+    const std::string &windowTitle = "vector", const std::string& keyset=""); 
+  
+  double getMeshRadius(mfem::Mesh& mesh);
+
+  std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
+    const std::vector<double>& rayDirection, int numSamples, std::string filename="");
+
+  std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::Vector &vec, mfem::FiniteElementSpace &fes,
+    const std::vector<double>& rayDirection, int numSamples, std::string filename="");
+
 
   /**
    * @brief Class to manage logging operations.
