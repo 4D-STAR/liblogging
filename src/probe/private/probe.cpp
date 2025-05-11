@@ -72,9 +72,9 @@ void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
     const auto visport = config.get<int>("Probe:GLVis:Port", 19916);
     mfem::socketstream sol_sock(vishost.c_str(), visport);
     sol_sock.precision(8);
-    sol_sock << "mesh\n" << mesh << u
-             << "window_title '" << windowTitle << '\n';
-             // "'\n" << "keys " << usedKeyset << "\n";
+    sol_sock << "solution\n" << mesh << u
+             << "window_title '" << windowTitle <<
+             "'\n" << "keys " << usedKeyset << "\n";
     sol_sock << std::flush;
   }
 }
