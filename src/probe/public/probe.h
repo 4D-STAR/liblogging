@@ -19,8 +19,7 @@
 //
 // *********************************************************************** */
 //=== Probe.h ===
-#ifndef PROBE_H
-#define PROBE_H
+#pragma once
 
 #include <string>
 #include <map>
@@ -136,4 +135,3 @@ namespace Probe {
   };
 
 } // namespace Probe
-#endif
