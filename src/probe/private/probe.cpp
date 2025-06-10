@@ -170,6 +170,7 @@ std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::GridFun
         LOG_DEBUG(logger, "Probe::getRaySolution() : Ray point {} found in element {} with r={:0.2f} and theta={:0.2f}", i, elementId, r, sampleValue);
         samples.push_back(sampleValue);
     } else { // If the point was not found in an element
+        LOG_INFO(logger, "Probe::getRaySolution() : Ray point {} not found", i);
         samples.push_back(0.0); 
     }
   }
