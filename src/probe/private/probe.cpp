@@ -37,12 +37,12 @@
 #include "mfem.hpp"
 
 #include "config.h" 
-#include "probe.h" 
+#include "probe.h"
 
 #include "warning_control.h"
 
 
-namespace Probe {
+namespace serif::probe {
 
 void pause() {
   std::cout << "Execution paused. Please press enter to continue..."
@@ -56,7 +56,7 @@ void wait(int seconds) {
 
 void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
                const std::string& windowTitle, const std::string& keyset) {
-  Config& config = Config::getInstance();
+  serif::config::Config& config = serif::config::Config::getInstance();
   quill::Logger* logger = LogManager::getInstance().getLogger("log");
   if (config.get<bool>("Probe:GLVis:Visualization", true)) {
     std::string usedKeyset;
@@ -81,7 +81,7 @@ void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
 
 void glVisView(mfem::Vector &vec, mfem::FiniteElementSpace &fes, const std::string &windowTitle, const std::string& keyset) {
   mfem::GridFunction gf(&fes);
-  
+
   DEPRECATION_WARNING_OFF
     gf.SetData(vec);
   DEPRECATION_WARNING_ON
@@ -108,8 +108,8 @@ double getMeshRadius(mfem::Mesh& mesh) {
 std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
                                    const std::vector<double>& rayDirection,
                                    int numSamples, std::string filename) {
-  Config& config = Config::getInstance();
-  Probe::LogManager& logManager = Probe::LogManager::getInstance();
+  serif::config::Config& config = serif::config::Config::getInstance();
+  serif::probe::LogManager& logManager = serif::probe::LogManager::getInstance();
   quill::Logger* logger = logManager.getLogger("log");
   LOG_INFO(logger, "Getting ray solution...");
   // Check if the directory to write to exists
@@ -171,7 +171,7 @@ std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::GridFun
         samples.push_back(sampleValue);
     } else { // If the point was not found in an element
         LOG_INFO(logger, "Probe::getRaySolution() : Ray point {} not found", i);
-        samples.push_back(0.0); 
+        samples.push_back(0.0);
     }
   }
   std::pair<std::vector<double>, std::vector<double>> samplesPair(radialPoints, samples);
@@ -204,7 +204,7 @@ std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::Vector 
 }
 
 LogManager::LogManager() {
-  Config& config = Config::getInstance();
+  serif::config::Config& config = serif::config::Config::getInstance();
   quill::Backend::start();
   auto CLILogger = quill::Frontend::create_or_get_logger(
       "root",
