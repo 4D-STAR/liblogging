@@ -35,7 +35,7 @@ dependencies = [
 ]
 
 # Define the liblogger library so it can be linked against by other parts of the build system
-libprobe = static_library('probe',
+libprobe = library('probe',
     probe_sources, 
     include_directories: include_directories('public'),
     cpp_args: ['-fvisibility=default'],
