@@ -19,8 +19,7 @@
 //
 // *********************************************************************** */
 //=== Probe.h ===
-#ifndef PROBE_H
-#define PROBE_H
+#pragma once
 
 #include <string>
 #include <map>
@@ -33,7 +32,7 @@
 /**
  * @brief The Probe namespace contains utility functions for debugging and logging.
  */
-namespace Probe {
+namespace serif::probe {
   /**
    * @brief Pause the execution and wait for user input.
    */
@@ -54,7 +53,7 @@ namespace Probe {
    */
   void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
     const std::string& windowTitle = "grid function", const std::string& keyset="");
-  
+
   /**
    * @brief Visualize a vector using GLVis.
    * @param vec The vector to visualize.
@@ -63,8 +62,8 @@ namespace Probe {
    * @param keyset The keyset to use for visualization.
    */
   void glVisView(mfem::Vector &vec, mfem::FiniteElementSpace &fes,
-    const std::string &windowTitle = "vector", const std::string& keyset=""); 
-  
+    const std::string &windowTitle = "vector", const std::string& keyset="");
+
   double getMeshRadius(mfem::Mesh& mesh);
 
   std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
@@ -136,4 +135,3 @@ namespace Probe {
   };
 
 } // namespace Probe
-#endif

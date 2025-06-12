@@ -37,12 +37,12 @@
 #include "mfem.hpp"
 
 #include "config.h" 
-#include "probe.h" 
+#include "probe.h"
 
 #include "warning_control.h"
 
 
-namespace Probe {
+namespace serif::probe {
 
 void pause() {
   std::cout << "Execution paused. Please press enter to continue..."
@@ -56,22 +56,20 @@ void wait(int seconds) {
 
 void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
                const std::string& windowTitle, const std::string& keyset) {
-  Config& config = Config::getInstance();
+  serif::config::Config& config = serif::config::Config::getInstance();
   quill::Logger* logger = LogManager::getInstance().getLogger("log");
-  std::string usedKeyset;
   if (config.get<bool>("Probe:GLVis:Visualization", true)) {
+    std::string usedKeyset;
     LOG_INFO(logger, "Visualizing solution using GLVis...");
     LOG_INFO(logger, "Window title: {}", windowTitle);
-    if (keyset == "") {
+    if (keyset.empty()) {
       usedKeyset = config.get<std::string>("Probe:GLVis:DefaultKeyset", "");
     } else {
       usedKeyset = keyset;
     }
     LOG_INFO(logger, "Keyset: {}", usedKeyset);
-    std::string vishost = config.get<std::string>("Probe:GLVis:Host", "localhost");
-    int visport = config.get<int>("Probe:GLVis:Port", 19916);
-    std::cout << "GLVis visualization enabled. Opening GLVis window... " << std::endl;
-    std::cout << "Using host: " << vishost << " and port: " << visport << std::endl;
+    const auto vishost = config.get<std::string>("Probe:GLVis:Host", "localhost");
+    const auto visport = config.get<int>("Probe:GLVis:Port", 19916);
     mfem::socketstream sol_sock(vishost.c_str(), visport);
     sol_sock.precision(8);
     sol_sock << "solution\n" << mesh << u
@@ -83,7 +81,7 @@ void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
 
 void glVisView(mfem::Vector &vec, mfem::FiniteElementSpace &fes, const std::string &windowTitle, const std::string& keyset) {
   mfem::GridFunction gf(&fes);
-  
+
   DEPRECATION_WARNING_OFF
     gf.SetData(vec);
   DEPRECATION_WARNING_ON
@@ -110,8 +108,8 @@ double getMeshRadius(mfem::Mesh& mesh) {
 std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
                                    const std::vector<double>& rayDirection,
                                    int numSamples, std::string filename) {
-  Config& config = Config::getInstance();
-  Probe::LogManager& logManager = Probe::LogManager::getInstance();
+  serif::config::Config& config = serif::config::Config::getInstance();
+  serif::probe::LogManager& logManager = serif::probe::LogManager::getInstance();
   quill::Logger* logger = logManager.getLogger("log");
   LOG_INFO(logger, "Getting ray solution...");
   // Check if the directory to write to exists
@@ -172,7 +170,8 @@ std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::GridFun
         LOG_DEBUG(logger, "Probe::getRaySolution() : Ray point {} found in element {} with r={:0.2f} and theta={:0.2f}", i, elementId, r, sampleValue);
         samples.push_back(sampleValue);
     } else { // If the point was not found in an element
-        samples.push_back(0.0); 
+        LOG_INFO(logger, "Probe::getRaySolution() : Ray point {} not found", i);
+        samples.push_back(0.0);
     }
   }
   std::pair<std::vector<double>, std::vector<double>> samplesPair(radialPoints, samples);
@@ -205,7 +204,7 @@ std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::Vector 
 }
 
 LogManager::LogManager() {
-  Config& config = Config::getInstance();
+  serif::config::Config& config = serif::config::Config::getInstance();
   quill::Backend::start();
   auto CLILogger = quill::Frontend::create_or_get_logger(
       "root",
