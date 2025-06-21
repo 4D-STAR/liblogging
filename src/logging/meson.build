@@ -44,4 +44,4 @@ logging_dep = declare_dependency(
     dependencies: dependencies
 )
 
-install_headers(config_headers, subdir : 'fourdst/fourdst/logging')
+install_headers(logging_headers, subdir : 'fourdst/fourdst/logging')
