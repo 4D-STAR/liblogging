@@ -43,3 +43,5 @@ logging_dep = declare_dependency(
     link_with: liblogging,
     dependencies: dependencies
 )
+
+install_headers(config_headers, subdir : 'fourdst/fourdst/logging')
