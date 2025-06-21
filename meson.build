@@ -24,6 +24,7 @@ project('liblogging', 'cpp', version: '0.0.1a', default_options: ['cpp_std=c++23
 add_project_arguments('-fvisibility=default', language: 'cpp')
 subdir('build-config')
 subdir('src')
+subdir('tests')
 
 pkg = import('pkgconfig')
 pkg.generate(
