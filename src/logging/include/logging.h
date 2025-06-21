@@ -4,11 +4,11 @@
 //   File Author: Emily Boudreaux
 //   Last Modified: April 03, 2025
 //
-//   4DSSE is free software; you can use it and/or modify
+//   liblogging is free software; you can use it and/or modify
 //   it under the terms and restrictions the GNU General Library Public
 //   License version 3 (GPLv3) as published by the Free Software Foundation.
 //
-//   4DSSE is distributed in the hope that it will be useful,
+//   liblogging is distributed in the hope that it will be useful,
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of
 //   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //   See the GNU Library General Public License for more details.
@@ -26,53 +26,12 @@
 #include <vector>
 #include <utility>
 
-#include "mfem.hpp"
 #include "quill/Logger.h"
 
 /**
  * @brief The Probe namespace contains utility functions for debugging and logging.
  */
-namespace serif::probe {
-  /**
-   * @brief Pause the execution and wait for user input.
-   */
-  void pause();
-
-  /**
-   * @brief Wait for a specified number of seconds.
-   * @param seconds The number of seconds to wait.
-   */
-  void wait(int seconds);
-
-  /**
-   * @brief Visualize a solution using GLVis.
-   * @param u The GridFunction to visualize.
-   * @param mesh The mesh associated with the GridFunction.
-   * @param windowTitle The title of the visualization window.
-   * @param keyset The keyset to use for visualization.
-   */
-  void glVisView(mfem::GridFunction& u, mfem::Mesh& mesh,
-    const std::string& windowTitle = "grid function", const std::string& keyset="");
-
-  /**
-   * @brief Visualize a vector using GLVis.
-   * @param vec The vector to visualize.
-   * @param mesh The mesh associated with the vector.
-   * @param windowTitle The title of the visualization window.
-   * @param keyset The keyset to use for visualization.
-   */
-  void glVisView(mfem::Vector &vec, mfem::FiniteElementSpace &fes,
-    const std::string &windowTitle = "vector", const std::string& keyset="");
-
-  double getMeshRadius(mfem::Mesh& mesh);
-
-  std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::GridFunction& u, mfem::Mesh& mesh,
-    const std::vector<double>& rayDirection, int numSamples, std::string filename="");
-
-  std::pair<std::vector<double>, std::vector<double>> getRaySolution(mfem::Vector &vec, mfem::FiniteElementSpace &fes,
-    const std::vector<double>& rayDirection, int numSamples, std::string filename="");
-
-
+namespace fourdst::logging {
   /**
    * @brief Class to manage logging operations.
    */

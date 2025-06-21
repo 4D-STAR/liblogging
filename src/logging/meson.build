@@ -4,11 +4,11 @@
 #   File Author: Emily Boudreaux
 #   Last Modified: March 19, 2025
 #
-#   4DSSE is free software; you can use it and/or modify
+#   liblogging is free software; you can use it and/or modify
 #   it under the terms and restrictions the GNU General Library Public
 #   License version 3 (GPLv3) as published by the Free Software Foundation.
 #
-#   4DSSE is distributed in the hope that it will be useful,
+#   liblogging is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #   See the GNU Library General Public License for more details.
@@ -18,33 +18,28 @@
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 # *********************************************************************** #
-# Define the library
-probe_sources = files(
-  'private/probe.cpp',
+logging_sources = files(
+  'lib/logging.cpp',
 )
 
-probe_headers = files(
-    'public/probe.h'
+logging_headers = files(
+  'include/logging.h'
 )
 
 dependencies = [
-    config_dep,
-    mfem_dep,
     quill_dep,
-    macros_dep
 ]
 
-# Define the liblogger library so it can be linked against by other parts of the build system
-libprobe = library('probe',
-    probe_sources, 
-    include_directories: include_directories('public'),
+liblogging = library('logging',
+    logging_sources, 
+    include_directories: include_directories('include'),
     cpp_args: ['-fvisibility=default'],
     install : true,
     dependencies: dependencies
     )
 
-probe_dep = declare_dependency(
-    include_directories: include_directories('public'),
-    link_with: libprobe,
+logging_dep = declare_dependency(
+    include_directories: include_directories('include'),
+    link_with: liblogging,
     dependencies: dependencies
 )
