@@ -8,3 +8,6 @@ quill_sp = cmake.subproject(
     options: quill_cmake_options,
 )
 quill_dep = quill_sp.dependency('quill')
+
+quill_headers = meson.project_source_root() + '/subprojects/quill/include/quill'
+install_subdir(quill_headers, install_dir: get_option('includedir'))
