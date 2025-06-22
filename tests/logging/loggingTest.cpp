@@ -8,7 +8,7 @@
 #include <regex>
 #include "quill/LogMacros.h"
 
-#include "logging.h"
+#include "fourdst/logging/logging.h"
 
 std::string getLastLine(const std::string& filename) {
     std::ifstream file(filename);

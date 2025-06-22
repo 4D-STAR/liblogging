@@ -34,7 +34,7 @@
 #include <utility>
 #include <filesystem>
 
-#include "logging.h"
+#include "fourdst/logging/logging.h"
 
 
 namespace fourdst::logging {

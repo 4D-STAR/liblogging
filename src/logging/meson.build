@@ -22,10 +22,6 @@ logging_sources = files(
   'lib/logging.cpp',
 )
 
-logging_headers = files(
-  'include/logging.h'
-)
-
 dependencies = [
     quill_dep,
 ]
@@ -44,4 +40,7 @@ logging_dep = declare_dependency(
     dependencies: dependencies
 )
 
+logging_headers = files(
+  'include/fourdst/logging/logging.h'
+)
 install_headers(logging_headers, subdir : 'fourdst/fourdst/logging')
