@@ -9,5 +9,7 @@ quill_sp = cmake.subproject(
 )
 quill_dep = quill_sp.dependency('quill')
 
-quill_headers = meson.project_source_root() + '/subprojects/quill/include/quill'
+message('Registering quill headers (' + meson.global_source_root() + '/subprojects/quill/include/quill) for installation...')
+quill_headers = meson.global_source_root() + '/subprojects/quill/include/quill'
 install_subdir(quill_headers, install_dir: get_option('includedir'))
+message('Done registering quill headers for installation!')
