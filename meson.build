@@ -18,7 +18,7 @@
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 # *********************************************************************** #
-project('liblogging', 'cpp', version: 'v1.0.8', default_options: ['cpp_std=c++23'], meson_version: '>=1.5.0')
+project('liblogging', 'cpp', version: 'v1.1.0', default_options: ['cpp_std=c++23'], meson_version: '>=1.5.0')
 
 # Add default visibility for all C++ targets
 add_project_arguments('-fvisibility=default', language: 'cpp')
@@ -26,14 +26,16 @@ subdir('build-config')
 subdir('src')
 subdir('tests')
 
-pkg = import('pkgconfig')
-pkg.generate(
-    name: 'liblogging',
-    description: 'Logging manager for SERiF and related projects',
-    version: meson.project_version(),
-    libraries: [liblogging],
-    subdirs: ['fourdst'],
-    filebase: 'fourdst_logging',
-    install_dir: join_paths(get_option('libdir'), 'pkgconfig')
-)
-
+if get_option('pkg-config')
+    message('Generating pkg-config file for liblogging...')
+    pkg = import('pkgconfig')
+    pkg.generate(
+        name: 'liblogging',
+        description: 'Logging manager for SERiF and related projects',
+        version: meson.project_version(),
+        libraries: [liblogging],
+        subdirs: ['fourdst'],
+        filebase: 'fourdst_logging',
+        install_dir: join_paths(get_option('libdir'), 'pkgconfig')
+    )
+endif
