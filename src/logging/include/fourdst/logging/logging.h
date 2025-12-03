@@ -24,7 +24,6 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <utility>
 
 #include "quill/Logger.h"
 

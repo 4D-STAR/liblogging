@@ -22,17 +22,17 @@
 #include "quill/Frontend.h"
 #include "quill/Logger.h"
 #include "quill/sinks/ConsoleSink.h"
-#include "quill/sinks/FileSink.h" 
-#include "quill/LogMacros.h"
+#include "quill/sinks/FileSink.h"
 
-#include <stdexcept>              
+#include <stdexcept>
 #include <string>
-#include <iostream>
-#include <chrono>
-#include <cmath>
 #include <vector>
 #include <utility>
-#include <filesystem>
+
+#if defined(__EMSCRIPTEN__)
+ #include <ranges>
+#endif
+
 
 #include "fourdst/logging/logging.h"
 
@@ -41,28 +41,43 @@ namespace fourdst::logging {
 
 LogManager::LogManager() {
   quill::Backend::start();
+  
   auto CLILogger = quill::Frontend::create_or_get_logger(
       "root",
       quill::Frontend::create_or_get_sink<quill::ConsoleSink>("sink_id_1"));
 
   newFileLogger("fourdst.log", "log");
+  
   loggerMap.emplace("stdout", CLILogger);
 }
 
+#if defined(__EMSCRIPTEN__)
+
+LogManager::~LogManager() {
+  for (const auto& logger : loggerMap | std::views::values) {
+    logger->flush_log();
+  }
+  quill::Backend::stop();
+}
+
+#else
+
 LogManager::~LogManager() = default;
 
+#endif
+
 quill::Logger* LogManager::getLogger(const std::string& loggerName) {
-  auto it = loggerMap.find(loggerName); // Find *once*
+  auto it = loggerMap.find(loggerName); 
   if (it == loggerMap.end()) {
     throw std::runtime_error("Cannot find logger " + loggerName);
   }
-  return it->second; // Return the raw pointer from the shared_ptr
+  return it->second;
 }
 
 std::vector<std::string> LogManager::getLoggerNames() {
   std::vector<std::string> loggerNames;
   loggerNames.reserve(loggerMap.size());
-  for (const auto& pair : loggerMap) { // Use range-based for loop and const auto&
+  for (const auto& pair : loggerMap) { 
     loggerNames.push_back(pair.first);
   }
   return loggerNames;
@@ -72,13 +87,21 @@ std::vector<quill::Logger*> LogManager::getLoggers() {
   std::vector<quill::Logger*> loggers;
   loggers.reserve(loggerMap.size());
   for (const auto& pair : loggerMap) {
-     loggers.push_back(pair.second); // Get the raw pointer
+     loggers.push_back(pair.second); 
   }
   return loggers;
 }
 
 quill::Logger* LogManager::newFileLogger(const std::string& filename,
-                                        const std::string& loggerName) {
+                                         const std::string& loggerName) {
+
+#if defined(__EMSCRIPTEN__)
+  auto proxy_sink = quill::Frontend::create_or_get_sink<quill::ConsoleSink>("sink_id_1");
+  quill::Logger* rawLogger = quill::Frontend::create_or_get_logger(loggerName, std::move(proxy_sink));
+
+  loggerMap.emplace(loggerName, rawLogger);
+  return rawLogger;
+#else
   auto file_sink = quill::Frontend::create_or_get_sink<quill::FileSink>(
       filename,
       []() {
@@ -87,12 +110,13 @@ quill::Logger* LogManager::newFileLogger(const std::string& filename,
         return cfg;
       }(),
       quill::FileEventNotifier{});
-  // Get the raw pointer.
+  
   quill::Logger* rawLogger = quill::Frontend::create_or_get_logger(loggerName, std::move(file_sink));
 
-  // Create a shared_ptr from the raw pointer.
   loggerMap.emplace(loggerName, rawLogger);
   return rawLogger;
+#endif
 }
 
-} // namespace Probe
+} 
+

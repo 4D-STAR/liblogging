@@ -1,5 +1,6 @@
 [wrap-git]
 url = https://github.com/odygrd/quill
 revision = v8.1.1
+diff_files = quill/add_wasm_rdtsc_fallback_support.patch, quill/enable_pthread_header_emscripted.patch
 
 [cmake]
