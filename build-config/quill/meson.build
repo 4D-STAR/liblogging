@@ -17,7 +17,6 @@ quill_dep = quill_sp.dependency('quill')
 
 if get_option('default_library') != 'static'
     message('Registering quill headers for installation...')
-    # Note: verify this path matches your source structure
     quill_headers = meson.global_source_root() + '/subprojects/quill/include/quill'
     install_subdir(quill_headers, install_dir: get_option('includedir'))
 endif
