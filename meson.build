@@ -18,18 +18,34 @@
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 # *********************************************************************** #
-project('liblogging', 'cpp', version: 'v1.1.5', default_options: ['cpp_std=c++23'], meson_version: '>=1.5.0')
+project('liblogging', 'cpp', version: 'v1.1.6', default_options: ['cpp_std=c++23'], meson_version: '>=1.5.0')
 
 # Add default visibility for all C++ targets
 add_project_arguments('-fvisibility=default', language: 'cpp')
 
-logging_header_install_dir = get_option('header_install_dir') != '' \
-    ? get_option('header_install_dir') / 'fourdst' / 'logging'  \
-    : get_option('includedir') / 'fourdst' / 'logging'
+if get_option('build_python')
+    local_py_install = import('python').find_installation('python3', pure: false)
+    fourdst_pkg = local_py_install.get_install_dir() / 'fourdst'
+    logging_libdir             = fourdst_pkg / 'lib'
+    logging_header_install_dir = fourdst_pkg / 'include' / 'fourdst' / 'logging'
 
-vendor_logging_header_install_dir = get_option('header_install_dir') != '' \
-    ? get_option('header_install_dir') / 'fourdst' / 'vendor'  \
-    : get_option('includedir') / 'fourdst' / 'vendor'
+    vendor_lib_dir             = fourdst_pkg / 'lib' / 'vendor'
+    vendor_header_dir          = fourdst_pkg / 'include' / 'fourdst' / 'vendor'
+
+    message('Installing liblogging in python mode. Install locations are...')
+else
+    logging_libdir             = get_option('libdir')
+    logging_header_install_dir = get_option('includedir') / 'fourdst' / 'logging'
+
+    vendor_lib_dir            = get_option('libdir') / 'fourdst' / 'vendor'
+    vendor_header_dir         = get_option('includedir') / 'fourdst' / 'vendor'
+
+    message('Installing liblogging in non python (normal) mode. Install locations are...')
+endif
+message('    Package Libraries: ' + logging_libdir)
+message('    Package Headers:   ' + logging_header_install_dir)
+message('    Vendor Libraries:  ' + vendor_lib_dir)
+message('    Vendor Headers:    ' + vendor_header_dir)
 
 subdir('build-config')
 subdir('src')
@@ -44,7 +60,7 @@ endif
 
 if get_option('pkg_config')
     message('Generating pkg-config file for liblogging...')
-    vendor_inc_flags = '-I' + vendor_logging_header_install_dir
+    vendor_inc_flags = '-I' + get_option('prefix') / vendor_header_dir
     pkg = import('pkgconfig')
     pkg.generate(
         name: 'liblogging',

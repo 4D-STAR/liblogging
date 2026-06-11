@@ -21,5 +21,5 @@ if get_option('default_library') != 'static'
 
 
 
-    install_subdir(quill_headers, install_dir: vendor_logging_header_install_dir)
+    install_subdir(quill_headers, install_dir: vendor_header_dir)
 endif
