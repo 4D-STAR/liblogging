@@ -26,13 +26,18 @@ dependencies = [
     quill_dep,
 ]
 
+logging_lib_install_dir = get_option('lib_install_dir') != '' \
+    ? get_option('lib_install_dir') \
+    : get_option('libdir')
+
 liblogging = library('logging',
-    logging_sources, 
-    include_directories: include_directories('include'),
-    cpp_args: ['-fvisibility=default'],
-    install : true,
-    dependencies: dependencies
-    )
+                     logging_sources,
+                     include_directories: include_directories('include'),
+                     cpp_args: ['-fvisibility=default'],
+                     install : true,
+                     install_dir: logging_lib_install_dir,
+                     dependencies: dependencies
+)
 
 logging_dep = declare_dependency(
     include_directories: include_directories('include'),
