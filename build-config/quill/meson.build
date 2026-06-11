@@ -15,8 +15,11 @@ quill_sp = cmake.subproject(
 
 quill_dep = quill_sp.dependency('quill')
 
-if get_option('default_library') != 'static' and get_option('lib_install_dir') == ''
+if get_option('default_library') != 'static'
     message('Registering quill headers for installation...')
     quill_headers = meson.global_source_root() + '/subprojects/quill/include/quill'
-    install_subdir(quill_headers, install_dir: get_option('includedir'))
+
+
+
+    install_subdir(quill_headers, install_dir: vendor_logging_header_install_dir)
 endif

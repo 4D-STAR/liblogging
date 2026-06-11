@@ -48,4 +48,4 @@ logging_dep = declare_dependency(
 logging_headers = files(
   'include/fourdst/logging/logging.h'
 )
-install_headers(logging_headers, subdir : 'fourdst/logging')
+install_headers(logging_headers, install_dir: logging_header_install_dir)
