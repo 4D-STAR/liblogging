@@ -26,14 +26,19 @@ dependencies = [
     quill_dep,
 ]
 
+samedir_rpath = host_machine.system() == 'darwin' ? '@loader_path' : '$ORIGIN'
+
 liblogging = library('logging',
                      logging_sources,
                      include_directories: include_directories('include'),
                      cpp_args: ['-fvisibility=default'],
                      install : true,
                      install_dir: logging_libdir,
+                     install_rpath: samedir_rpath,
+                     build_rpath: samedir_rpath,
                      dependencies: dependencies
 )
+
 
 logging_dep = declare_dependency(
     include_directories: include_directories('include'),
@@ -44,4 +49,9 @@ logging_dep = declare_dependency(
 logging_headers = files(
   'include/fourdst/logging/logging.h'
 )
-install_headers(logging_headers, install_dir: logging_header_install_dir)
+
+if get_option('build_python')
+    install_data(logging_headers, install_dir: logging_header_install_dir)
+else
+    install_headers(logging_headers, install_dir: logging_header_install_dir)
+endif
